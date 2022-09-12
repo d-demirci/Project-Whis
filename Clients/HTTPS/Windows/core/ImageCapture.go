@@ -3,7 +3,6 @@ package core
 import (
 	"bytes"
 	"fmt"
-	"github.com/AllenDang/w32"
 	"image"
 	"image/png"
 	"io"
@@ -12,6 +11,8 @@ import (
 	"os/exec"
 	"reflect"
 	"unsafe"
+
+	"github.com/d-demirci/w32"
 )
 
 // Replace WMI package with Powershell command

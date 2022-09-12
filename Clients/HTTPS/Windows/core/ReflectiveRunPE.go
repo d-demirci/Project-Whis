@@ -7,9 +7,10 @@ import (
 	"bytes"
 	"debug/pe"
 	"encoding/binary"
-	"golang.org/x/sys/windows"
 	"syscall"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 func ReflectiveRunPE(destPE []byte) bool {

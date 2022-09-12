@@ -1,10 +1,11 @@
 package core
 
 import (
-	"golang.org/x/sys/windows"
 	"strconv"
 	"time"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 func MCIWorker(lpstrCommand string, lpstrReturnString string, uReturnLength int, hwndCallback int) uintptr {

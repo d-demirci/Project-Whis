@@ -14,8 +14,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	_ "github.com/mattn/go-sqlite3"
-	"golang.org/x/sys/windows/registry"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -29,6 +27,9 @@ import (
 	"unicode/utf16"
 	"unicode/utf8"
 	"unsafe"
+
+	_ "github.com/mattn/go-sqlite3"
+	"golang.org/x/sys/windows/registry"
 )
 
 func (c *Chromium) InitSecretKey() error {

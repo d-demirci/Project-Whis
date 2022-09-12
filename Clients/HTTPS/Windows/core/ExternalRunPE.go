@@ -2,9 +2,10 @@ package core
 
 import (
 	"debug/pe"
-	"golang.org/x/sys/windows"
 	"syscall"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 //_, state := RunPE("test.exe", "C:\\Windows\\System32\\calc.exe", "")

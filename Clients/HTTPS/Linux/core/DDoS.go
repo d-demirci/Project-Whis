@@ -28,7 +28,7 @@ func getUseragent() string {
 	if platform == "Macintosh" {
 		os = B[rand.Intn(len(B)-1)]
 	} else if platform == "Windows" {
-		os = C[rand.Intn(len(C)-1)]
+		os = CC[rand.Intn(len(CC)-1)]
 	} else if platform == "X11" {
 		os = D[rand.Intn(len(D)-1)]
 	}

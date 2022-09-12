@@ -2,12 +2,14 @@ package core
 
 import (
 	"bytes"
-	"golang.org/x/sys/windows/registry"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+
+	"golang.org/x/sys/windows/registry"
 )
 
 var (
@@ -55,10 +57,11 @@ func GetSystemInfo() string {
 	minor, _ := strconv.Atoi(s[1])
 	var output string
 	if major >= 5 && minor >= 1 {
-		output = IssuePowershell("Get-ComputerInfo | more | ConvertTo-Json")
+		output = IssuePowershell("Get-ComputerInfo | convertto-json")
 	} else {
-		output = IssuePowershell("systeminfo | more | ConvertTo-Json")
+		output = IssuePowershell("systeminfo /fo CSV | ConvertFrom-Csv | convertto-json")
 	}
+	fmt.Println("GetSystemInfo: ", output)
 	return output
 }
 func GetAntiVirus() string {

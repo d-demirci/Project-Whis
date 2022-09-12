@@ -656,7 +656,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         let last;
 
         if (window["WebSocket"]) {
-            conn = new WebSocket("wss://" + document.location.host + "/live");
+            conn = new WebSocket("ws://" + document.location.host + "/live");
             conn.onopen = function () {
                 console.log("Live Agent: Connected");
                 conn.send("ping");

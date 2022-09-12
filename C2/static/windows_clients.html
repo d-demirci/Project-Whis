@@ -291,7 +291,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 </div>
                 <!-- /.card -->
                 <div class="row">
-                    <div class="col-lg-6">
+                    <div class="col-lg-12">
                         <div class="card card-info">
                             <div class="card-header">
                                 <h3 class="card-title">Issue Command</h3>
@@ -795,7 +795,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         let last;
 
         if (window["WebSocket"]) {
-            conn = new WebSocket("wss://" + document.location.host + "/live");
+            conn = new WebSocket("ws://" + document.location.host + "/live");
             conn.onopen = function () {
                 console.log("Live Agent: Connected");
                 conn.send("ping");

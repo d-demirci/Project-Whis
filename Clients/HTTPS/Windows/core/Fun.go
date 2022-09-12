@@ -2,7 +2,6 @@ package core
 
 import (
 	"fmt"
-	"golang.org/x/sys/windows"
 	"io"
 	"net/http"
 	"os"
@@ -10,6 +9,8 @@ import (
 	"runtime"
 	"time"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 func SetWallpaper(Image string) {

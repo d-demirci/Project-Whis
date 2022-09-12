@@ -2,10 +2,11 @@
 package main
 
 import (
-	"ProjectWhis/Clients/HTTPS/Windows/core"
 	"math/rand"
 	"os"
 	"time"
+
+	"github.com/SaturnsVoid/Project-Whis/Clients/HTTPS/Windows/core"
 )
 
 func init() {
