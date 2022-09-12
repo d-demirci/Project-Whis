@@ -2,6 +2,7 @@ package core
 
 import (
 	"encoding/base64"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -81,7 +82,7 @@ func Daemon() { //Handle background stuff like counts and filters
 
 			}
 		}
-
+		fmt.Println("GoDaemon Running...")
 		time.Sleep(15 * time.Second)
 	}
 }

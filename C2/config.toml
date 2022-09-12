@@ -12,7 +12,7 @@ hvnc = "53899" #hVNC Port
 rbrowser = "5555" #Remote Browser Port
 
 [database]
-host = "127.0.0.1:3306" #MySQL Host and Port
+host = "db:3306" #MySQL Host and Port
 database = "whistesting" #MySQL Database Name
 username = "whistesting" #MySQL Username
 password = "whistesting" #MySQL Password

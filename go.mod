@@ -1,4 +1,4 @@
-module github.com/SaturnsVoid/Project-Whis
+module github.com/d-demirci/Project-Whis
 
 go 1.17
 

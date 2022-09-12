@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/SaturnsVoid/Project-Whis/Clients/HTTPS/Windows/core"
+	"github.com/d-demirci/Project-Whis/Clients/HTTPS/Windows/core"
 )
 
 func init() {
